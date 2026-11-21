@@ -2,7 +2,9 @@ import clsx from "clsx";
 import { Check, Copy, Download, ExternalLink, PencilLine, Send, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Button, Chip, Empty, ErrorNote, FlagChip, PageHeader, ScoreBar, Skeleton, Stamp, StatusChip, Tabs, Tilt, useToast } from "../components/ui";
+import { Button, Chip, Empty, ErrorNote, FlagChip, ScoreBar, Skeleton, Stamp, StatusChip, Tabs, Tilt, useToast } from "../components/ui";
+import { Card, CardTitle, Section } from "../world/Section";
+import { world } from "../world/store";
 import { api, PREVIEW, type Draft } from "../lib/api";
 import { dayMonth, hostOf, LESSON_LABEL, timeAgo, wordCount } from "../lib/format";
 import { dataChanged, useApi, useOnDataChanged, usePrefersReducedMotion } from "../lib/hooks";
@@ -360,42 +362,55 @@ export default function Approvals() {
     if (next) select(next.id);
   };
 
+  const TRAY = { pending: "pending", ready: "approved", rejected: "rejected", sent: "sent" } as const;
+  useEffect(() => {
+    world.set({ tray: TRAY[filter] });
+    return () => world.set({ tray: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
   return (
-    <div>
-      <PageHeader
-        title="Approval queue"
-        description="Every email the agent writes waits here. Approve it, edit it or reject it with a reason. Approved emails are sent by you from your own inbox, never by the app."
-      />
-      {error && <ErrorNote message={error} />}
-      <Tabs
-        label="Draft status"
-        value={filter}
-        onChange={(f) => setParams({ tab: f })}
-        options={[
-          { value: "pending", label: "Waiting", count: groups.pending.length },
-          { value: "ready", label: "Ready to send", count: groups.ready.length },
-          { value: "rejected", label: "Rejected", count: groups.rejected.length },
-          { value: "sent", label: "Sent", count: groups.sent.length },
-        ]}
-      />
-      {!data ? (
-        <Skeleton className="mt-6 h-96 w-full" />
-      ) : list.length === 0 ? (
-        <div className="mt-6">
-          <Empty title={filter === "pending" ? "Nothing waiting for approval" : "Nothing here yet"}>
-            {filter === "pending" ? "Run the agent to research leads and draft emails. New drafts land here." : "Drafts move here as you review them."}
-          </Empty>
+    <Section shot="approvals" wide="xl">
+      <div className="grid items-start gap-4 lg:grid-cols-[330px_1fr]">
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 pb-2 pt-5">
+            <CardTitle>Approval queue</CardTitle>
+            <p className="text-[14px] leading-relaxed text-ink-2">Every email the agent writes waits here. Approve it, edit it or reject it with a reason. Approved emails are sent by you, from your own inbox, never by the app.</p>
+            {error && <ErrorNote message={error} />}
+            <div className="mt-3">
+              <Tabs
+                label="Draft status"
+                value={filter}
+                onChange={(f) => setParams({ tab: f })}
+                options={[
+                  { value: "pending", label: "Waiting", count: groups.pending.length },
+                  { value: "ready", label: "Ready", count: groups.ready.length },
+                  { value: "rejected", label: "Rejected", count: groups.rejected.length },
+                  { value: "sent", label: "Sent", count: groups.sent.length },
+                ]}
+              />
+            </div>
+          </div>
+          {!data ? (
+            <Skeleton className="m-5 h-72" />
+          ) : list.length === 0 ? (
+            <div className="p-5">
+              <Empty title={filter === "pending" ? "Nothing waiting for approval" : "Nothing here yet"}>
+                {filter === "pending" ? "Run the agent to research leads and draft emails. New drafts land here." : "Drafts move here as you review them."}
+              </Empty>
+            </div>
+          ) : (
+            <nav aria-label="Drafts" className="max-h-[56vh] divide-y divide-rule-soft overflow-y-auto border-t border-rule-soft">
+              {list.map((d) => (
+                <QueueItem key={d.id} d={d} active={d.id === selectedId} onClick={() => select(d.id)} />
+              ))}
+            </nav>
+          )}
+        </Card>
+        <div className="min-w-0">
+          {data && list.length > 0 && (selectedId && list.some((d) => d.id === selectedId) ? <DraftView id={selectedId} onDone={onDone} /> : <Skeleton className="h-96 w-full rounded-[22px]" />)}
         </div>
-      ) : (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[320px_1fr]">
-          <nav aria-label="Drafts" className="panel max-h-[78vh] divide-y divide-rule-soft overflow-y-auto">
-            {list.map((d) => (
-              <QueueItem key={d.id} d={d} active={d.id === selectedId} onClick={() => select(d.id)} />
-            ))}
-          </nav>
-          <div className="min-w-0">{selectedId && list.some((d) => d.id === selectedId) ? <DraftView id={selectedId} onDone={onDone} /> : <Skeleton className="h-96 w-full" />}</div>
-        </div>
-      )}
-    </div>
+      </div>
+    </Section>
   );
 }

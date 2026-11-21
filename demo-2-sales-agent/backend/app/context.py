@@ -28,7 +28,7 @@ class Context:
         return {
             "ai": f"live ({s.anthropic_model})" if self.llm.live else "offline planner (no API key)",
             "research": "Tavily web search" if self.research.source == "web" else "research cache (real public sources)",
-            "database": "Supabase Postgres" if s.database_kind == "postgres" else "local SQLite",
+            "database": ("Supabase Postgres" if "supabase" in s.database_url else "Postgres") if s.database_kind == "postgres" else "local SQLite",
             "slack": "live (internal channel)" if s.slack_live else "simulated (feed in the app)",
             "crm": "live (HubSpot)" if s.hubspot_live else "imported or sample CSV",
             "sending": "none: approved drafts are exported and sent by a person",

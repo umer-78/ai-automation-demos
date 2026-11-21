@@ -17,6 +17,7 @@ import Overview from "./pages/Overview";
 import Profile from "./pages/Profile";
 import Report from "./pages/Report";
 import Runs from "./pages/Runs";
+import Settings from "./pages/Settings";
 
 const Router = PREVIEW ? PreviewRouter : BrowserRouter;
 
@@ -36,6 +37,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="report" element={<Report />} />
                 <Route path="runs" element={<Runs />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

@@ -1,7 +1,8 @@
+import { PageIntro, Section } from "../world/Section";
 import clsx from "clsx";
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
-import { Chip, Empty, ErrorNote, PageHeader, Panel, Skeleton, Tilt } from "../components/ui";
+import { Chip, Empty, ErrorNote, Panel, Skeleton, Tilt } from "../components/ui";
 import type { AgentContext, DraftStats, Learning as LearningData } from "../lib/api";
 import { LESSON_LABEL, pct, shortDate, timeAgo } from "../lib/format";
 import { useApi, useOnDataChanged } from "../lib/hooks";
@@ -90,8 +91,9 @@ export default function Learning() {
   const [showPrompt, setShowPrompt] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
+    <Section shot="learning" wide="xl">
+      <div className="space-y-4">
+      <PageIntro
         title="How the agent learns from you"
         description="Every approve, edit and reject is stored. The next run gets the last 20 of them in its prompt, plus the rules they add up to. The draft checks enforce those rules, so the change is visible, not hoped for."
       />
@@ -175,6 +177,7 @@ export default function Learning() {
           </Panel>
         </>
       )}
-    </div>
+      </div>
+    </Section>
   );
 }

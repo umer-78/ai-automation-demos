@@ -346,7 +346,7 @@ export const SOCKET_NAMES: Record<(typeof SOCKETS)[number], string> = {
   airtable: "Airtable",
   slack: "Slack",
   email: "Email",
-  database: "Supabase",
+  database: "Database",
   storage: "Storage",
   make: "Make",
 };
@@ -391,7 +391,7 @@ export default function World() {
     const out: Record<string, boolean> = {};
     for (const k of SOCKETS) {
       const v = ints[k] ?? "";
-      out[k] = v === "live" || v.startsWith("live") || v.startsWith("supabase");
+      out[k] = v === "live" || v.startsWith("live") || v.startsWith("supabase") || v === "postgres";
     }
     return out;
   }, [status.data]);

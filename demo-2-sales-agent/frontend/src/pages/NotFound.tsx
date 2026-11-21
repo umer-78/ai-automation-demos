@@ -1,13 +1,16 @@
 import { Link } from "react-router-dom";
+import { Card, Section, btn } from "../world/Section";
 
 export default function NotFound() {
   return (
-    <div className="py-20 text-center">
-      <h1 className="display text-[40px]">Nothing on the radar here</h1>
-      <p className="mt-3 text-ink-2">This page does not exist.</p>
-      <Link to="/" className="link mt-6 inline-block font-semibold">
-        Back to the overview
-      </Link>
-    </div>
+    <Section shot="home">
+      <Card>
+        <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.03em]">Nothing on the radar here</h1>
+        <p className="mt-2 text-[15px] text-ink-2">This page does not exist. The radar behind this card is where every researched company sits.</p>
+        <Link to="/" className={`${btn.primary} mt-5`}>
+          Back to the overview
+        </Link>
+      </Card>
+    </Section>
   );
 }

@@ -1,7 +1,6 @@
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
 import { QUADRANTS } from "../components/radarMeta";
 import { STATIONS, flowSteps, gateNote, stationIndexOf, stationNotes, type StationKey } from "../components/flowMeta";
@@ -177,7 +176,7 @@ function Labels({ overview, accounts, notes, states, live, counts }: {
   const hoverAccount = useWorld((s) => s.hoverAccount);
   const leads = overview?.radar ?? [];
   const lead = leads.find((l) => l.id === (hoverLead ?? selLead)) ?? null;
-  const hot = leads.filter((l) => l.status !== "excluded" && l.score >= 75).slice(0, 5);
+  const hot = leads.filter((l) => l.status !== "excluded" && l.score >= 75).slice(0, 3);
   const accIndex = accounts?.findIndex((a) => a.id === hoverAccount) ?? -1;
   const acc = accIndex >= 0 ? accounts![accIndex] : null;
   const maxValue = Math.max(1, ...(accounts ?? []).map((a) => a.deal_value ?? a.arr ?? 0));
@@ -256,19 +255,6 @@ class GlBoundary extends Component<{ fallback: ReactNode; children: ReactNode },
   }
 }
 
-/** Opens the page for a lead or account clicked in the world. */
-function useWorldClicks() {
-  const navigate = useNavigate();
-  const lead = useWorld((s) => s.lead);
-  const account = useWorld((s) => s.account);
-  useEffect(() => {
-    if (lead !== null && !location.pathname.startsWith("/leads")) navigate(`/leads?lead=${lead}`);
-  }, [lead, navigate]);
-  useEffect(() => {
-    if (account !== null && !location.pathname.startsWith("/accounts")) navigate(`/accounts?account=${account}`);
-  }, [account, navigate]);
-}
-
 /** The one 3D world every page sits on. Pages move the camera; the world shows the live data. */
 export default function World() {
   const still = usePrefersReducedMotion();
@@ -283,7 +269,6 @@ export default function World() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const refresh = useCallback(() => reloaders.forEach((r) => void r()), reloaders);
   useOnDataChanged(refresh);
-  useWorldClicks();
 
   const flag = useWorld((s) => s.flag);
   const shown = busy && run ? run : overview.data?.latest_run ?? null;

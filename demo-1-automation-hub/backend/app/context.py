@@ -27,7 +27,7 @@ class Context:
         s = self.settings
         return {
             "ai": "live" if self.llm.live else "offline templates",
-            "database": "supabase postgres" if s.database_kind == "postgres" else "local sqlite",
+            "database": ("supabase postgres" if "supabase" in s.database_url else "postgres") if s.database_kind == "postgres" else "local sqlite",
             "slack": "live" if s.slack_live else "simulated (feed in dashboard)",
             "email": "live smtp" if s.email_live else "simulated (outbox in dashboard)",
             "airtable": "live" if s.airtable_live else "not connected (dashboard form)",

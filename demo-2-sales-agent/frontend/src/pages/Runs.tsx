@@ -1,10 +1,11 @@
+import { PageIntro, Section } from "../world/Section";
 import clsx from "clsx";
 import { BellRing } from "lucide-react";
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import RunLog from "../components/RunLog";
-import { Button, Chip, Empty, ErrorNote, PageHeader, Panel, Skeleton, StatusChip, useToast } from "../components/ui";
-import { api, type LogRow, type Notification, type Overview, type Run } from "../lib/api";
+import { Button, Chip, Empty, ErrorNote, Panel, Skeleton, StatusChip, useToast } from "../components/ui";
+import { api, type LogRow, type Notification, type Run } from "../lib/api";
 import { count, seconds, timeAgo } from "../lib/format";
 import { dataChanged, useApi, useOnDataChanged } from "../lib/hooks";
 
@@ -15,7 +16,6 @@ const WORKFLOW: Record<string, string> = {
   forced_failure_check: "Deliberate test failure",
 };
 
-const AgentFlow3D = lazy(() => import("../components/AgentFlow3D"));
 
 const slackText = (text: string) =>
   text.replace(/<[^|>]+\|([^>]+)>/g, "$1").replace(/[*`]/g, "").replace(/:[a-z_]+:/g, "").replace(/^> /gm, "").trim();
@@ -25,7 +25,6 @@ export default function Runs() {
   const { data: runs, error, reload } = useApi<Run[]>("/api/runs");
   const { data: log, reload: reloadLog } = useApi<LogRow[]>("/api/automation-log");
   const { data: feed, reload: reloadFeed } = useApi<Notification[]>("/api/notifications");
-  const { data: overview, reload: reloadOverview } = useApi<Overview>("/api/overview");
   const toast = useToast();
   const [failing, setFailing] = useState(false);
   useOnDataChanged(
@@ -33,8 +32,7 @@ export default function Runs() {
       void reload();
       void reloadLog();
       void reloadFeed();
-      void reloadOverview();
-    }, [reload, reloadLog, reloadFeed, reloadOverview]),
+    }, [reload, reloadLog, reloadFeed]),
   );
   const selected = params.get("run") ?? runs?.[0]?.id ?? null;
   const { data: run, reload: reloadRun } = useApi<Run>(selected ? `/api/runs/${selected}` : null);
@@ -58,8 +56,9 @@ export default function Runs() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
+    <Section shot="runs" wide="xl">
+      <div className="space-y-4">
+      <PageIntro
         title="Runs and logs"
         description="Every agent run is stored with each tool it called, what came back, tokens and cost. Every automation writes success or failure to the automation log, and failures raise a Slack alert."
         actions={
@@ -69,11 +68,7 @@ export default function Runs() {
         }
       />
       {error && <ErrorNote message={error} />}
-      {run && (
-        <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
-          <AgentFlow3D run={run} counts={overview?.counts} />
-        </Suspense>
-      )}
+
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <Panel title="Agent runs" padded={false}>
           {!runs ? (
@@ -173,6 +168,7 @@ export default function Runs() {
           </ul>
         </Panel>
       </div>
-    </div>
+      </div>
+    </Section>
   );
 }

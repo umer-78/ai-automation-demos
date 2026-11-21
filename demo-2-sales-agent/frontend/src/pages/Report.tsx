@@ -1,3 +1,4 @@
+import { Section } from "../world/Section";
 import { Download, ExternalLink, Printer } from "lucide-react";
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
@@ -36,13 +37,17 @@ export default function Report() {
   const { data, error, reload } = useApi<ReportData>("/api/report/weekly");
   useOnDataChanged(useCallback(() => void reload(), [reload]));
 
-  if (error) return <ErrorNote message={error} />;
-  if (!data) return <Skeleton className="h-[700px] w-full" />;
+  if (error || !data)
+    return (
+      <Section shot="report" wide="xl">
+        {error ? <ErrorNote message={error} /> : <Skeleton className="h-[700px] w-full rounded-[22px]" />}
+      </Section>
+    );
   const r = data.reviews;
 
   return (
-    <div>
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
+    <Section shot="report" wide="xl">
+      <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/80 px-5 py-3 ring-1 ring-black/[0.05] backdrop-blur-xl flex flex-wrap items-center justify-between gap-3">
         <p className="text-[14px] text-ink-2">Built from live data each time you open it. Generated {new Date(data.generated_at).toLocaleString("en-GB")}.</p>
         {!PREVIEW && (
           <div className="flex gap-2">
@@ -154,6 +159,6 @@ export default function Report() {
           )}
         </section>
       </article>
-    </div>
+    </Section>
   );
 }

@@ -1,6 +1,7 @@
+import { PageIntro, Section } from "../world/Section";
 import clsx from "clsx";
 import { Fragment, useCallback, useEffect, useState, type ReactNode } from "react";
-import { Button, Chip, ErrorNote, PageHeader, Panel, Skeleton, Tabs, useToast } from "../components/ui";
+import { Button, Chip, ErrorNote, Panel, Skeleton, Tabs, useToast } from "../components/ui";
 import { api, type IcpChange, type IcpCriteria, type IcpPayload, type KnowledgeDoc } from "../lib/api";
 import { shortDate } from "../lib/format";
 import { dataChanged, useApi, useOnDataChanged } from "../lib/hooks";
@@ -77,8 +78,12 @@ export default function Profile() {
     }
   }, [data]);
 
-  if (error) return <ErrorNote message={error} />;
-  if (!data || !draft) return <Skeleton className="h-[600px] w-full" />;
+  if (error || !data || !draft)
+    return (
+      <Section shot="profile" wide="xl">
+        {error ? <ErrorNote message={error} /> : <Skeleton className="h-[600px] w-full rounded-[22px]" />}
+      </Section>
+    );
   const opts = data.options;
   const payload = () => ({ ...draft, exclusions: exclusions.split("\n").map((s) => s.trim()).filter(Boolean), note: note || undefined });
   const update = (patch: Partial<IcpCriteria>) => {
@@ -115,8 +120,9 @@ export default function Profile() {
   const moved = (preview ?? []).filter((c) => c.delta !== 0 || c.old_status !== c.new_status);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
+    <Section shot="profile" wide="xl">
+      <div className="space-y-4">
+      <PageIntro
         title="Ideal customer profile"
         description="The agent writes the first version from the product notes, competitor notes and deal history. Edit anything; your version always wins, and every lead and account is re-scored against it."
       />
@@ -257,6 +263,7 @@ export default function Profile() {
           </Panel>
         </div>
       </div>
-    </div>
+      </div>
+    </Section>
   );
 }

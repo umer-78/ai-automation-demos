@@ -60,6 +60,11 @@
       "path": "/profile",
       "title": "Ideal customer profile | Acme Sales Agent",
       "description": "Edit the ideal customer profile the agent scores against, preview how lead scores change and keep a version history."
+    },
+    {
+      "path": "/settings",
+      "title": "Settings | Acme Sales Agent",
+      "description": "Load your own CRM from a CSV export or HubSpot, write your company notes and add the keys for live AI, web research and Slack."
     }
   ]
 }

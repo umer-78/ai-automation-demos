@@ -9,21 +9,22 @@ export type Shot = { pos: Vec3; target: Vec3; shift: number; zone: Zone };
 export const ZONES: Record<Zone, Vec3> = {
   radar: [0, 0, 0],
   agent: [0, 0, -22],
-  queue: [19, 0, -7],
-  crm: [-19, 0, -7],
+  queue: [24, 0, -10],
+  crm: [-24, 0, -10],
   learning: [-16, 0, 13],
   report: [16, 0, 13],
   settings: [0, 0, 20],
 };
 
 export const SHOTS = {
-  home: { pos: [0.6, 12.5, 14.5], target: [0.4, 0.2, 0.4], shift: 0.2, zone: "radar" },
+  home: { pos: [0.4, 15.2, 17.8], target: [0.2, 0.2, 0.6], shift: 0.2, zone: "radar" },
   leads: { pos: [-3.2, 9, 10.5], target: [-0.2, 0.4, 0], shift: -0.18, zone: "radar" },
   profile: { pos: [1, 15.5, 7.5], target: [0.2, 0, 0.2], shift: 0.21, zone: "radar" },
   agent: { pos: [0, 10, -8.5], target: [0, 0.6, -22.4], shift: 0.19, zone: "agent" },
   runs: { pos: [7, 12.5, -7.5], target: [0.4, 0.6, -22], shift: -0.16, zone: "agent" },
-  queue: { pos: [19, 8.6, 4.2], target: [19, 0.7, -7.2], shift: 0.19, zone: "queue" },
-  crm: { pos: [-19, 11.2, 5.6], target: [-19, 0.6, -7.6], shift: 0.19, zone: "crm" },
+  queue: { pos: [24, 8.6, 1.2], target: [24, 0.7, -10.2], shift: -0.19, zone: "queue" },
+  approvals: { pos: [24, 16.5, 4.5], target: [24, 0.4, -10], shift: 0.36, zone: "queue" },
+  crm: { pos: [-24, 12, 3.2], target: [-24, 0.6, -10.6], shift: 0.19, zone: "crm" },
   learning: { pos: [-16, 5.8, 23.5], target: [-16, 1.9, 13], shift: 0.2, zone: "learning" },
   report: { pos: [16, 5.8, 23.5], target: [16, 2, 13], shift: 0.2, zone: "report" },
   settings: { pos: [0, 10.5, 35], target: [-0.9, 0.3, 20], shift: 0.2, zone: "settings" },
