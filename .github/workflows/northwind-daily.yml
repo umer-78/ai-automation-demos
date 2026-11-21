@@ -1,0 +1,33 @@
+name: Northwind daily jobs
+
+# Free scheduler for Demo 1: the reporting pipeline and the Airtable webhook refresh.
+# Set repository secrets NORTHWIND_URL and NORTHWIND_AUTOMATION_KEY (and NORTHWIND_ADMIN_TOKEN
+# if you use the Airtable webhook bridge). Without them the jobs are skipped.
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    env:
+      URL: ${{ secrets.NORTHWIND_URL }}
+      KEY: ${{ secrets.NORTHWIND_AUTOMATION_KEY }}
+      ADMIN: ${{ secrets.NORTHWIND_ADMIN_TOKEN }}
+    steps:
+      - name: Wake the service (free instances sleep)
+        if: env.URL != ''
+        run: curl -fsS --retry 5 --retry-all-errors --max-time 90 "$URL/api/health"
+      - name: Run the daily metrics pipeline (upserts, safe to repeat)
+        if: env.URL != '' && env.KEY != ''
+        run: |
+          curl -fsS --max-time 300 -X POST "$URL/api/automation/jobs/daily-metrics" -H "X-Automation-Key: $KEY"
+      - name: Refresh the Airtable webhook (they expire after 7 days)
+        if: env.URL != '' && env.ADMIN != ''
+        run: |
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" --max-time 60 -X POST "$URL/api/admin/airtable/webhook/refresh" -H "X-Admin-Token: $ADMIN")
+          cat /tmp/out.json
+          # 404 means no webhook was registered (bridge not in use), which is fine
+          if [ "$code" != "200" ] && [ "$code" != "404" ]; then exit 1; fi

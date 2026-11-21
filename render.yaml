@@ -1,0 +1,71 @@
+# Render Blueprint: two free Docker web services, one per demo.
+# New > Blueprint in the Render dashboard, pick this repo, then fill in the secrets it asks for.
+# Free web services sleep after 15 minutes without traffic and have no persistent disk, so point
+# DATABASE_URL at Supabase to keep data between restarts. Scheduled jobs run from GitHub Actions
+# (.github/workflows), because Render cron jobs are not on the free plan.
+services:
+  - type: web
+    name: northwind-automation-hub
+    runtime: docker
+    plan: free
+    dockerfilePath: ./demo-1-automation-hub/Dockerfile
+    dockerContext: ./demo-1-automation-hub
+    healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - demo-1-automation-hub/**
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTOMATION_API_KEY
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: AIRTABLE_TOKEN
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: MAKE_ONBOARDING_WEBHOOK_URL
+        sync: false
+      - key: MAKE_OFFBOARDING_WEBHOOK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+  - type: web
+    name: acme-sales-agent
+    runtime: docker
+    plan: free
+    dockerfilePath: ./demo-2-sales-agent/Dockerfile
+    dockerContext: ./demo-2-sales-agent
+    healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - demo-2-sales-agent/**
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTOMATION_API_KEY
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false

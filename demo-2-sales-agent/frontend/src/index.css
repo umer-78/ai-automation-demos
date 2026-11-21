@@ -1,0 +1,165 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "tailwindcss";
+
+/* Studio: white cards floating over one light 3D world, near-black type, black primary buttons and
+   one amber signal colour for what needs a person (hot leads, the live run, drafts waiting). */
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  /* the weekly report reads like a memo, so it gets a newspaper serif with optical sizes */
+  --font-memo: "Newsreader Variable", Georgia, "Times New Roman", serif;
+
+  --color-paper: #eef0f3;
+  --color-sheet: #ffffff;
+  --color-rule: #e3e5e9;
+  --color-rule-soft: #eceef1;
+  --color-ink: #0a0a0a;
+  --color-ink-2: #3f444c;
+  --color-ink-3: #5b616b;
+  --color-spruce: #0a0a0a;
+  --color-spruce-2: #23272e;
+  --color-spruce-3: #353a42;
+  --color-sage: #b9bec7;
+  --color-sage-soft: #f1f2f4;
+  --color-amber: #f5a524;
+  --color-amber-ink: #8a5a00;
+  --color-amber-soft: #fff4e0;
+  --color-moss: #0f9f88;
+  --color-moss-soft: #e7f6f3;
+  --color-crimson: #d93a40;
+  --color-crimson-soft: #fdecec;
+  --color-cobalt: #2f5bff;
+
+  --radius-console: 22px;
+  --radius-panel: 16px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-paper text-ink;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    font-feature-settings: "ss01", "cv11";
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: var(--color-amber-soft);
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+}
+
+@layer components {
+  .display {
+    font-weight: 640;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+  .heading {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .panel {
+    background: var(--color-sheet);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-panel);
+  }
+  .console {
+    background:
+      radial-gradient(120% 90% at 70% 40%, color-mix(in srgb, var(--color-spruce-3) 55%, transparent), transparent 70%),
+      var(--color-spruce);
+    border-radius: var(--radius-console);
+    color: #e8f0ec;
+  }
+  .field {
+    @apply w-full rounded-lg border border-rule bg-sheet px-3 py-2 text-[15px] text-ink placeholder:text-ink-3/70;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-cobalt);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cobalt) 16%, transparent);
+  }
+  .link {
+    color: var(--color-cobalt);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-cobalt) 35%, transparent);
+  }
+  .link:hover {
+    text-decoration-color: var(--color-cobalt);
+  }
+  .sheet {
+    background: var(--color-sheet);
+    border: 1px solid var(--color-rule);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 var(--color-rule-soft), 0 18px 40px -28px color-mix(in srgb, var(--color-spruce) 45%, transparent);
+  }
+  .table-head th {
+    @apply px-4 py-2.5 text-left text-[13px] font-semibold text-ink-2;
+  }
+  .table-row td {
+    @apply border-t border-rule-soft px-4 py-3 align-top;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-sheet {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* the pulsing dot beside "Live" in the header */
+.live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-moss);
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid var(--color-moss);
+  opacity: 0;
+  animation: live-ring 2.4s ease-out infinite;
+}
+@keyframes live-ring {
+  0% { transform: scale(0.5); opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after { animation: none; }
+}

@@ -1,0 +1,65 @@
+{
+  "site": "Acme Sales Agent",
+  "image": "/og-image.png",
+  "imageAlt": "The Acme Sales Agent lead radar: researched companies as glowing beacons on a dark green console",
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Acme Sales Agent",
+    "description": "An AI sales agent demo: web research with sourced buying signals, CRM analysis, 0 to 100 lead scores with reasons, and outreach drafts that a person approves before anything is sent.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any modern web browser",
+    "isAccessibleForFree": true,
+    "author": {
+      "@type": "Person",
+      "name": "Umer",
+      "url": "https://github.com/umer-78",
+      "sameAs": [
+        "https://github.com/umer-78",
+        "https://umer-78.github.io"
+      ]
+    }
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Acme Sales Agent: who to call this week, and what to say",
+      "description": "An AI sales agent demo for Acme Cloud Security. It researches real companies with sourced buying signals, checks 50 CRM accounts, scores every lead from 0 to 100 and drafts emails that a person approves."
+    },
+    {
+      "path": "/approvals",
+      "title": "Approval queue | Acme Sales Agent",
+      "description": "Every email the agent writes waits here. Approve it, edit it or reject it with a reason. The app has no way to send email."
+    },
+    {
+      "path": "/leads",
+      "title": "Researched leads | Acme Sales Agent",
+      "description": "Real companies found by web research, each with a dated buying signal, a source link and a 0 to 100 score with the reasons behind it."
+    },
+    {
+      "path": "/accounts",
+      "title": "CRM accounts | Acme Sales Agent",
+      "description": "Fifty mock CRM accounts checked for stalled deals, accounts with no contact for 30 days or more, and likely upsells."
+    },
+    {
+      "path": "/learning",
+      "title": "Learning from feedback | Acme Sales Agent",
+      "description": "How reviewer feedback changes the next run: the last 20 approvals, edits and rejections, the rules learned from them, and drafts before and after."
+    },
+    {
+      "path": "/report",
+      "title": "Weekly report | Acme Sales Agent",
+      "description": "The weekly sales report: leads found, emails approved and sent, pipeline at risk and what the agent learned this week."
+    },
+    {
+      "path": "/runs",
+      "title": "Runs and logs | Acme Sales Agent",
+      "description": "Every agent run with each tool it called, what came back, tokens and cost, plus the automation log and the Slack alerts."
+    },
+    {
+      "path": "/profile",
+      "title": "Ideal customer profile | Acme Sales Agent",
+      "description": "Edit the ideal customer profile the agent scores against, preview how lead scores change and keep a version history."
+    }
+  ]
+}

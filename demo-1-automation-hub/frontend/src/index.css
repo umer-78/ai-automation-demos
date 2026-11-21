@@ -1,0 +1,140 @@
+@import "@fontsource-variable/geist";
+@import "tailwindcss";
+
+/* Minimal light: white surfaces on a near-white ground, hairline borders, near-black type and one
+   accent per meaning (teal for healthy, blue for spend, red for failures). The 3D scenes sit on
+   soft grey stages and carry most of the colour. */
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-night: #fafafa;
+  --color-polar: #0a0a0a;
+  --color-polar-2: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f6;
+  --color-edge: #e8e8eb;
+  --color-ink: #0a0a0a;
+  --color-slate: #66666e;
+  --color-faint: #a1a1aa;
+  --color-aurora: #0f9f88;
+  --color-aurora-ink: #0b7d6b;
+  --color-aurora-soft: #0f9f8814;
+  --color-glacier: #2563eb;
+  --color-glacier-soft: #2563eb12;
+  --color-violet: #7c5cf0;
+  --color-ember: #e5484d;
+  --color-ember-ink: #c4343a;
+  --color-ember-soft: #e5484d12;
+  --color-amber: #b7790a;
+  --color-amber-soft: #f0b43c21;
+
+  --radius-panel: 12px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-night text-ink;
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    line-height: 1.55;
+    font-feature-settings: "ss01", "cv11";
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: rgb(15 159 136 / 0.18);
+  }
+}
+
+@layer components {
+  .display {
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+  }
+  .heading {
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    border-radius: var(--radius-panel);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  }
+  /* where the 3D lives: a quiet grey stage, lit from the top */
+  .stage {
+    background: radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #f3f3f5 62%, #ececef 100%);
+    border: 1px solid var(--color-edge);
+    border-radius: 16px;
+  }
+  .field {
+    @apply w-full rounded-lg border border-edge bg-surface px-3 py-2 text-[14.5px] text-ink placeholder:text-faint;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field:focus {
+    outline: none;
+    border-color: #a1a1aa;
+    box-shadow: 0 0 0 3px rgb(10 10 10 / 0.06);
+  }
+  .table-head th {
+    @apply px-4 py-2.5 text-left text-[12.5px] font-medium text-slate;
+  }
+  .table-row td {
+    @apply border-t border-edge px-4 py-3 align-middle;
+  }
+  .live-dot {
+    @apply relative inline-block size-2 rounded-full bg-aurora;
+  }
+  .live-dot::after {
+    content: "";
+    @apply absolute inset-0 rounded-full bg-aurora;
+    animation: live-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes live-ping {
+    75%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* scroll cue under the hero */
+.scroll-cue {
+  display: inline-block;
+  width: 2px;
+  height: 28px;
+  border-radius: 2px;
+  background: linear-gradient(#000 0 0) 0 -12px / 100% 40% no-repeat, rgba(0, 0, 0, 0.12);
+  animation: scroll-cue 1.8s ease-in-out infinite;
+}
+@keyframes scroll-cue {
+  to {
+    background-position: 0 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+  }
+}

@@ -1,0 +1,37 @@
+name: Acme weekly agent run and report
+
+# Free scheduler for Demo 2: runs the sales agent every Monday morning, then posts the weekly
+# report headline to the sales team's Slack channel. Drafts still wait for approval in the app.
+# Set repository secrets ACME_URL and ACME_AUTOMATION_KEY. Without them the job is skipped.
+
+on:
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    env:
+      URL: ${{ secrets.ACME_URL }}
+      KEY: ${{ secrets.ACME_AUTOMATION_KEY }}
+    steps:
+      - name: Wake the service (free instances sleep)
+        if: env.URL != ''
+        run: curl -fsS --retry 5 --retry-all-errors --max-time 90 "$URL/api/health"
+      - name: Start the agent run
+        if: env.URL != '' && env.KEY != ''
+        run: |
+          run_id=$(curl -fsS -X POST "$URL/api/automation/run-agent" -H "X-Automation-Key: $KEY" | python3 -c "import sys, json; print(json.load(sys.stdin)['run_id'])")
+          echo "run $run_id started"
+          for i in $(seq 1 40); do
+            status=$(curl -fsS "$URL/api/runs/$run_id" | python3 -c "import sys, json; print(json.load(sys.stdin)['status'])")
+            echo "status: $status"
+            if [ "$status" != "running" ]; then break; fi
+            sleep 6
+          done
+          [ "$status" != "failed" ]
+      - name: Post the weekly report to Slack
+        if: env.URL != '' && env.KEY != ''
+        run: |
+          curl -fsS -X POST "$URL/api/automation/weekly-report" -H "X-Automation-Key: $KEY"
