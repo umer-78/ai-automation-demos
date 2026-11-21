@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from datetime import timedelta
+from datetime import date, timedelta
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -279,6 +279,24 @@ def test_live_sync_stores_exactly_what_the_platforms_report(live):
 
     st = live.get("/api/status").json()
     assert st["data"]["label"] == "Live data" and st["data"]["last_sync"]["source"] == "dashboard"
+
+
+def test_first_sync_backfills_so_30_day_totals_are_complete(live):
+    live.post("/api/data/real")
+    live.put("/api/data/accounts", json={"name": "Acme Dental", "accounts": {"meta_ads": "42"}})
+
+    def meta_range() -> int:
+        req = [r for r in live.fake.calls if r.url.host == "graph.facebook.com" and "after=" not in str(r.url)][-1]
+        rng = json.loads(parse_qs(req.url.query.decode())["time_range"][0])
+        return (date.fromisoformat(rng["until"]) - date.fromisoformat(rng["since"])).days + 1
+
+    assert live.post("/api/data/sync").json()["status"] == "success"
+    assert meta_range() == 60, "a new client gets 60 days: 30-day totals plus the period they are compared with"
+    live.post("/api/data/sync")
+    assert meta_range() == 14, "after that only the window platforms still restate is re-read"
+    live.put("/api/data/accounts", json={"name": "Bright Smile", "accounts": {"meta_ads": "43"}})
+    live.post("/api/data/sync")
+    assert meta_range() == 60, "a client linked later is backfilled too"
 
 
 def test_discover_lists_accounts_with_names(live, monkeypatch):

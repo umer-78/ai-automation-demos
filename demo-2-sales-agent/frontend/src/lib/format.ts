@@ -25,7 +25,8 @@ export function timeAgo(iso: string | null | undefined) {
   if (diff < 45) return "just now";
   if (diff < 3600) return `${Math.round(diff / 60)} min ago`;
   if (diff < 86400) return `${Math.round(diff / 3600)} h ago`;
-  return `${Math.round(diff / 86400)} days ago`;
+  const days = Math.round(diff / 86400);
+  return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
 export const seconds = (ms: number | null | undefined) => (ms === null || ms === undefined ? "n/a" : ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`);

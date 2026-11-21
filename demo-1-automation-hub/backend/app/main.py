@@ -76,7 +76,7 @@ def create_app(settings: Settings | None = None, *, llm_client=None, context: Co
                 if not await run_in_threadpool(lambda: data_mode.get_mode(ctx) == "real" and data_mode.live_available(ctx)):
                     continue
                 first_today = full_pull_on != today_utc()
-                days = ctx.settings.metrics_lookback_days if first_today else ctx.settings.live_sync_days
+                days = await run_in_threadpool(lambda: data_mode.sync_days(ctx, full=first_today))
                 await run_in_threadpool(lambda: run_daily_metrics(ctx, source="live", days=days, run_source="schedule", post_alerts=first_today))
                 full_pull_on = today_utc()
             except asyncio.CancelledError:

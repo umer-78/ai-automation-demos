@@ -12,6 +12,15 @@ import re
 from datetime import date, datetime, timedelta
 from typing import Any
 
+
+def plural(n: int, word: str) -> str:
+    return f"{n} {word}" if n == 1 else f"{n} {word}s"
+
+
+def ago(days: int) -> str:
+    return "today" if days <= 0 else "yesterday" if days == 1 else f"{days} days ago"
+
+
 CATEGORIES = {
     "b2b_saas": "B2B SaaS",
     "fintech": "Fintech",
@@ -289,7 +298,7 @@ def analyze_account(acc: dict[str, Any], icp: dict[str, Any], now: datetime, las
         flags.append("stalled")
         reasons["stalled"] = (
             f"Stuck in {stage} for {in_stage} days (limit {STAGE_LIMIT_DAYS[stage]}), "
-            f"although the last touch was only {since_contact} days ago."
+            f"although the last touch was only {ago(since_contact)}."
         )
 
     used, limit = acc.get("cloud_accounts_used"), acc.get("cloud_accounts_limit")
@@ -305,7 +314,7 @@ def analyze_account(acc: dict[str, Any], icp: dict[str, Any], now: datetime, las
         if keyword:
             bits.append(f"notes mention '{keyword}'")
         if renewal_days is not None and renewal_days <= 90 and usage >= 0.6:
-            bits.append(f"renewal in {renewal_days} days")
+            bits.append(f"renewal in {plural(renewal_days, 'day')}")
         if bits:
             flags.append("upsell")
             reasons["upsell"] = "Likely upsell: " + "; ".join(bits) + "."
@@ -337,7 +346,7 @@ def analyze_account(acc: dict[str, Any], icp: dict[str, Any], now: datetime, las
         f"{acc.get('region') or 'region unknown'}, {acc.get('cloud_provider') or 'cloud unknown'}. "
         f"Signals {signals}/30: {stage_txt}, {money}" + (", likely upsell" if "upsell" in flags else "") + ". "
         + (
-            f"Recency {recency}/20: last touch {since_contact} days ago."
+            f"Recency {recency}/20: last touch {ago(since_contact)}."
             if since_contact is not None
             else "Recency 0/20: never contacted."
         )

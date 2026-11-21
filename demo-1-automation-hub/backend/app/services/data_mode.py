@@ -10,10 +10,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import delete, desc, select
+from sqlalchemy import delete, desc, exists, select
 
 from app.context import Context
-from app.db import as_utc, automation_log, client_accounts, kv_store, upsert, utcnow
+from app.db import as_utc, automation_log, campaign_metrics, client_accounts, kv_store, upsert, utcnow
 
 MODE_KEY = "data_mode"
 PLATFORM_LABEL = {"google_ads": "Google Ads", "meta_ads": "Meta Ads", "search_console": "Search Console", "ga4": "Google Analytics"}
@@ -55,6 +55,22 @@ def live_sources(ctx: Context) -> list[str]:
 
 def live_available(ctx: Context) -> bool:
     return bool(live_sources(ctx))
+
+
+def sync_days(ctx: Context, *, full: bool = True) -> int:
+    """Days to pull on a live sync: a long backfill while a linked client has no numbers yet (the
+    first sync, or a client added since), the lookback window for a full pull, or only the last
+    few days for a quick refresh."""
+    with ctx.engine.connect() as conn:
+        new_client = conn.execute(
+            select(client_accounts.c.client_id)
+            .where(~exists().where(campaign_metrics.c.client_id == client_accounts.c.client_id))
+            .limit(1)
+        ).first() is not None
+    s = ctx.settings
+    if new_client:
+        return s.live_backfill_days
+    return s.metrics_lookback_days if full else s.live_sync_days
 
 
 def last_run(ctx: Context, *sources: str) -> dict[str, Any] | None:

@@ -5,7 +5,7 @@ Status to **Churned** starts off-boarding.
 
 ## 1. Create the Clients table
 
-Import `Clients.csv` (Add or import → CSV) into a new base, then set the field types:
+Import `Clients.csv` (**Add or import**, then **CSV**) into a new base, then set the field types:
 
 | Field | Type | Notes |
 | --- | --- | --- |

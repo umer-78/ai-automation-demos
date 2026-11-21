@@ -1,14 +1,17 @@
-# Demo 2: B2B Sales Agent (proof of concept)
+# Demo 2: B2B Sales Agent
 
-An AI agent for a fictional seller, **Acme Cloud Security**. One click and it reads the product and
-deal notes, writes an ideal customer profile, researches real companies on the web, analyses a
-50-account CRM, scores everything from 0 to 100 with a plain-English reason, drafts personalised
-first emails and follow-ups, and prepares a one-page weekly report.
+An AI sales agent, shown for a fictional seller, **Acme Cloud Security**. One click and it reads
+the product and deal notes, writes an ideal customer profile, researches real companies on the
+web, analyses the CRM, scores everything from 0 to 100 with a plain-English reason, drafts
+personalised first emails and follow-ups, and prepares a one-page weekly report.
 
 A person approves every message. The agent has no tool that can send anything, and the app has no
 email client at all: approved drafts are exported and sent by the rep from their own inbox.
 
-![Overview: one click runs the agent; the radar shows every researched company by score and signal](docs/screenshots/overview.png)
+**Live:** https://sales-agent-production-68fda07e.up.railway.app  
+A one-page summary for clients is in [docs/one-pager.md](docs/one-pager.md).
+
+![Overview: each pin on the 3D radar is a real company; closer to the centre and taller means a higher score](docs/screenshots/overview.png)
 
 ## What it does
 
@@ -28,7 +31,29 @@ shows up as a before and after draft.
 
 ![Approval queue: the cited fact and its source sit above every first email](docs/screenshots/approvals.png)
 
-![Learning: the reviewer's reason, the rules it became and the rewritten draft](docs/screenshots/learning.png)
+![CRM accounts: every account scored and flagged, each pillar in the 3D view is one account](docs/screenshots/crm.png)
+
+## Sample CRM or your CRM
+
+The app starts on a **sample CRM** (50 fictional accounts) and switches to yours from Settings.
+
+* **Import a CRM export**: a CSV from HubSpot, Salesforce, Pipedrive or a sheet. Common column
+  names are recognised (company, domain, stage, amount, owner, last contacted, date entered
+  current stage, contact). Stages are mapped to Prospect, Discovery, Proposal and Customer;
+  closed-lost rows are skipped, and importing again updates accounts instead of doubling them.
+* **HubSpot**: paste a private app token with read scopes only. The app reads companies, deals,
+  contacts and owners, maps each pipeline stage by its win probability (under 25% Prospect, under
+  50% Discovery, otherwise Proposal; closed won is Customer) and takes the date each deal entered
+  its stage from the deal's history. It syncs every hour and never writes to HubSpot.
+* **Your company notes**: in real mode the agent reads your product, competitor and deal notes
+  from Settings instead of Acme's. A run is refused, with a list of what is missing, until the
+  product notes, a Claude API key and a Tavily key are in, so it never researches for the wrong
+  company.
+
+Once your CRM is loaded the whole app locks behind an access code (`OWNER_TOKEN`, plus an optional
+read-only `VIEWER_TOKEN`), because pipeline data is private. Keys pasted in Settings are
+encrypted with Fernet (key derived from `APP_SECRET`), shown masked, and can only be changed
+with the owner code. **Show the demo again** wipes your data and reloads the sample.
 
 ## Architecture
 
@@ -40,7 +65,8 @@ flowchart LR
     runner <-- "tool use loop" --> model["Anthropic Messages API"]
     runner --> tools{{"read_knowledge, save_icp, search_web, read_page, save_lead, analyze_crm, get_account_activity, list_leads, draft_outreach, draft_follow_up, finish"}}
     tools --> search["Tavily search, or the cached research file"]
-    tools --> db[("Supabase Postgres: accounts, activity, leads, drafts, feedback, agent_runs, icp_versions, automation_log")]
+    tools --> db[("Postgres: accounts, activity, leads, drafts, feedback, agent_runs, icp_versions, automation_log")]
+    crm(["HubSpot (read-only) or a CSV export"]) --> db
     db --> queue[Approval queue]
     rep -- "approve, edit, reject" --> queue
     queue -- "feedback rows" --> db
@@ -66,7 +92,13 @@ flowchart LR
   companies) are enforced. A failed check goes back to the model as a tool error it can fix.
 * **The safety rule is structural**: there is no send tool, no SMTP client, and
   `/api/drafts/{id}/eml` and `/mark-sent` refuse any draft without an approve or edit row in the
-  `feedback` table. `tests/test_safety.py` checks all three.
+  `feedback` table. `tests/test_safety.py` checks all three, and also that the only outbound
+  POST requests are the internal Slack webhook, research, key tests and HubSpot's read-only
+  batch reads.
+* **Dashboard**: React 19, Vite, Tailwind and React Three Fiber. One 3D scene sits behind every
+  page (the lead radar, the agent's stations, the approval trays, the CRM pillars) and the camera
+  flies to the part each section talks about. Each route has its own title, description and
+  JSON-LD for search engines.
 
 ## Set up (local, about 5 minutes)
 
@@ -75,23 +107,25 @@ flowchart LR
 3. `cd frontend && npm ci && npm run build && cd ..` (builds the dashboard into `backend/app/static`)
 4. `cp .env.example .env` and, optionally, add `ANTHROPIC_API_KEY` and `TAVILY_API_KEY`
 5. `cd backend && uvicorn app.main:app --reload`, then open http://localhost:8000 and click **Run agent**
-6. `python -m pytest -q` runs the 33 tests (acceptance criteria, safety, learning loop, live loop with a scripted model)
+6. `python -m pytest -q` runs the 49 tests (acceptance criteria, safety, learning loop, live loop with a scripted model, CRM import and HubSpot sync)
 
 For dashboard development run `npm run dev` in `frontend/` (port 5174, proxies `/api` to port 8001
 by default; set `VITE_DEV_API=http://localhost:8000` to point it elsewhere).
 
-## Deploy (free tiers)
+## Deploy (Railway, about 10 minutes)
 
-1. **Supabase**: create a project, open the SQL editor and run `supabase/schema.sql`. Copy the
-   *Session pooler* connection string (Project settings, Database).
-2. **Render**: New, Blueprint, pick this repo. `render.yaml` creates the `acme-sales-agent` web
-   service from the Dockerfile. Set `DATABASE_URL`, `PUBLIC_BASE_URL` (the service URL),
-   `ANTHROPIC_API_KEY` and `TAVILY_API_KEY`. `AUTOMATION_API_KEY` and `ADMIN_TOKEN` are generated.
-   Railway works the same way: new service from the repo, root directory `demo-2-sales-agent`,
-   it detects the Dockerfile; add the same variables.
-3. **Slack** (optional): add an incoming webhook for the sales team's channel as `SLACK_WEBHOOK_URL`.
-4. **Weekly schedule** (optional): add repository secrets `ACME_URL` and `ACME_AUTOMATION_KEY`;
+1. New project, **Deploy from GitHub repo**, pick this repo. Set the service's root directory to
+   `demo-2-sales-agent`; Railway finds the Dockerfile.
+2. Add a **Postgres** database and set `DATABASE_URL=${{Postgres.DATABASE_URL}}` on the service.
+   The tables are created on first start (`supabase/schema.sql` has the same schema for Supabase).
+3. Set `ENVIRONMENT=production`, `PUBLIC_BASE_URL` (the service URL), and long random values for
+   `OWNER_TOKEN`, `APP_SECRET`, `AUTOMATION_API_KEY` and `ADMIN_TOKEN`.
+4. Generate a domain, open **Settings**, enter the owner code and paste the Claude, Tavily,
+   HubSpot and Slack keys you want. Each one has a **Test connection** button.
+5. Optional: add repository secrets `ACME_URL` and `ACME_AUTOMATION_KEY`;
    `.github/workflows/acme-weekly.yml` runs the agent every Monday and posts the report to Slack.
+
+`render.yaml` at the repo root does the same on Render (free plan, Supabase for the database).
 
 Public demo guards: 6 agent runs per visitor per hour, at most 40 paid AI runs a day (extra runs
 use the offline planner), and `POST /api/admin/reset` with `X-Admin-Token` reloads the CRM.
@@ -107,6 +141,9 @@ use the offline planner), and `POST /api/admin/reset` with `X-Admin-Token` reloa
 | Every agent run is logged with the tools it called | `agent_runs.tools_called`: tool, input, result, timing, who called it (AI, planner or fallback) | `test_every_run_is_logged_with_its_tool_calls` |
 | The weekly report renders from live data | Built on request from the database | `test_weekly_report_renders_from_live_data` |
 | Shared rule: failures are logged and alerted | `automation_log` + Slack alert, with a "Test a failure alert" button | `test_failures_are_logged_and_alerted` |
+| Your CRM is read correctly and never written to | Stage mapping by pipeline probability, dates from deal history, read-only calls | `test_hubspot_sync_reads_stages_dates_and_owners`, `test_csv_import_replaces_the_sample_crm`, `test_only_the_internal_slack_webhook_is_called` |
+| Real pipeline data is never public | Access code on every route once your CRM is in | `test_real_crm_needs_an_access_code` |
+| The agent never sells for the wrong company | Runs are refused until your notes and keys are in | `test_agent_needs_your_product_notes_in_real_mode` |
 
 The suite also runs against Postgres (`TEST_DATABASE_URL=postgresql://... pytest`), which is what CI does.
 
@@ -136,6 +173,7 @@ Interactive docs at `/docs`. Main routes: `POST /api/agent/run`, `GET /api/runs/
 `GET /api/agent/context` (the exact prompt the next run will get), `GET /api/leads`,
 `GET /api/accounts`, `GET /api/drafts`, `POST /api/drafts/{id}/approve|edit|reject|mark-sent`,
 `GET /api/drafts/{id}/eml`, `GET|PUT /api/icp`, `POST /api/icp/preview`, `GET /api/learning`,
-`GET /api/report/weekly(.md)`.
+`GET /api/report/weekly(.md)`, `GET /api/data/status`, `POST /api/data/import`,
+`POST /api/data/hubspot/sync`, `GET /api/data/notes`, `PUT /api/data/notes/{name}`, `GET|PUT|DELETE /api/settings/{provider}`.
 
-Built by [Umer](https://github.com/umer-78). MIT licence.
+Built by [Umer Hashmi](https://github.com/umer-78). MIT licence.

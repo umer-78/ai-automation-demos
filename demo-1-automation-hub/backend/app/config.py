@@ -82,6 +82,7 @@ class Settings(BaseSettings):
     meta_conversion_actions: str = "lead,purchase"  # Meta action types counted as conversions
     live_sync_minutes: int = 60  # how often the app pulls fresh numbers in live mode; 0 turns it off
     live_sync_days: int = 3  # recent days re-pulled on each sync (platforms restate conversions)
+    live_backfill_days: int = 60  # the first live sync pulls this many days, so 30-day totals and their comparison are complete
     viewer_token: str = ""  # optional read-only access code for teammates once real data is in
 
     # ---------------------------------------------------------------------------------

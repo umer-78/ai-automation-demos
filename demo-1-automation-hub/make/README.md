@@ -4,8 +4,8 @@ Two scenarios, which fits the Make Free plan (2 active scenarios):
 
 | Blueprint | Trigger | What it does |
 | --- | --- | --- |
-| `northwind-client-onboarding.blueprint.json` | Custom webhook (new client) | Sync client → **router by service** (SEO / Paid Ads / Web Design: checklist + Slack welcome) → AI brief, saved to Airtable and emailed to the account manager as a draft → Slack summary → success log |
-| `northwind-client-offboarding.blueprint.json` | Custom webhook (Status = Churned) | Close tasks, archive client → Slack summary → success log |
+| `northwind-client-onboarding.blueprint.json` | Custom webhook (new client) | Sync client, then a **router by service** (SEO, Paid Ads, Web Design: checklist and Slack welcome), then the AI brief (saved to Airtable and emailed to the account manager as a draft), a Slack summary and a success log |
+| `northwind-client-offboarding.blueprint.json` | Custom webhook (Status = Churned) | Close tasks and archive the client, then a Slack summary and a success log |
 
 ```
 Webhook ─ Settings ─ Sync client ─ Router ─┬─ [has SEO]        SEO checklist ─ Slack welcome
@@ -22,7 +22,7 @@ nested route posts directly to Slack, so a failure is never silent.
 
 ## Import
 
-1. In Make: **Scenarios → Create a new scenario → ⋯ → Import blueprint**, pick a file.
+1. In Make: **Scenarios**, **Create a new scenario**, the **⋯** menu, **Import blueprint**, pick a file.
 2. Click the webhook module, **Add** a new webhook, copy its URL.
 3. Open module 2 (**Settings**) and set `api_base` (your deployed hub URL),
    `automation_key` (same value as `AUTOMATION_API_KEY`) and `slack_webhook`.

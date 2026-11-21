@@ -269,7 +269,7 @@ def sync_now(days: int = Query(0, ge=0, le=400), ctx: Context = Depends(get_ctx)
     if not data_mode.live_available(ctx):
         raise HTTPException(409, "Connect an ad account and link it to a client first.")
     try:
-        return run_daily_metrics(ctx, source="live", days=days or ctx.settings.metrics_lookback_days, run_source="dashboard")
+        return run_daily_metrics(ctx, source="live", days=days or data_mode.sync_days(ctx), run_source="dashboard")
     except PipelineError as exc:
         raise HTTPException(502, str(exc)) from exc
 

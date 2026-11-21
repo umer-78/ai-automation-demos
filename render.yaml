@@ -1,5 +1,6 @@
 # Render Blueprint: two free Docker web services, one per demo.
 # New > Blueprint in the Render dashboard, pick this repo, then fill in the secrets it asks for.
+# API keys can also be pasted later on each app's Settings page (unlocked with OWNER_TOKEN).
 # Free web services sleep after 15 minutes without traffic and have no persistent disk, so point
 # DATABASE_URL at Supabase to keep data between restarts. Scheduled jobs run from GitHub Actions
 # (.github/workflows), because Render cron jobs are not on the free plan.
@@ -25,6 +26,12 @@ services:
         generateValue: true
       - key: ADMIN_TOKEN
         generateValue: true
+      - key: OWNER_TOKEN
+        generateValue: true
+      - key: APP_SECRET
+        generateValue: true
+      - key: VIEWER_TOKEN
+        sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: SLACK_WEBHOOK_URL
@@ -63,9 +70,17 @@ services:
         generateValue: true
       - key: ADMIN_TOKEN
         generateValue: true
+      - key: OWNER_TOKEN
+        generateValue: true
+      - key: APP_SECRET
+        generateValue: true
+      - key: VIEWER_TOKEN
+        sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: TAVILY_API_KEY
+        sync: false
+      - key: HUBSPOT_TOKEN
         sync: false
       - key: SLACK_WEBHOOK_URL
         sync: false
