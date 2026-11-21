@@ -1,0 +1,12 @@
+{
+  "name": "Northwind Digital automation hub",
+  "short_name": "Northwind Hub",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#E7EDF1",
+  "theme_color": "#E7EDF1",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

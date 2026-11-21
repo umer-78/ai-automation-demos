@@ -1,0 +1,13 @@
+{
+  "name": "Acme Cloud Security sales agent",
+  "short_name": "Sales agent",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#12302B",
+  "theme_color": "#12302B",
+  "icons": [
+    { "src": "./favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "./apple-touch-icon.png", "type": "image/png", "sizes": "180x180" },
+    { "src": "./icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

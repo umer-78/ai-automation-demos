@@ -1,0 +1,387 @@
+{
+  "name": "Northwind \u2014 Client onboarding (Airtable row \u2192 router \u2192 Python + Claude \u2192 Slack)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": null,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 10,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": false
+              },
+              "mapper": {
+                "url": "https://YOUR-HUB.onrender.com/api/hooks/make/onboarding",
+                "serializeUrl": false,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "X-Hub-Token",
+                    "value": "YOUR_HUB_API_TOKEN"
+                  }
+                ],
+                "qs": [],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "authUser": "",
+                "authPass": "",
+                "timeout": "60",
+                "shareCookies": false,
+                "ca": "",
+                "rejectUnauthorized": true,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "gzip": true,
+                "useMtls": false,
+                "contentType": "application/json",
+                "data": "{\"record_id\": \"{{1.record_id}}\", \"name\": \"{{1.name}}\", \"website\": \"{{1.website}}\", \"industry\": \"{{1.industry}}\", \"services\": \"{{1.services}}\", \"manager\": \"{{1.manager}}\", \"manager_email\": \"{{1.manager_email}}\", \"service\": \"SEO\"}",
+                "followAllRedirects": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 600,
+                  "y": 0
+                }
+              },
+              "filter": {
+                "name": "Bought SEO",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.services}}",
+                      "o": "text:contain",
+                      "b": "SEO"
+                    }
+                  ]
+                ]
+              },
+              "onerror": [
+                {
+                  "id": 11,
+                  "module": "http:ActionSendData",
+                  "version": 3,
+                  "parameters": {
+                    "handleErrors": false
+                  },
+                  "mapper": {
+                    "url": "https://YOUR-HUB.onrender.com/api/hooks/make/failure",
+                    "serializeUrl": false,
+                    "method": "post",
+                    "headers": [
+                      {
+                        "name": "X-Hub-Token",
+                        "value": "YOUR_HUB_API_TOKEN"
+                      }
+                    ],
+                    "qs": [],
+                    "bodyType": "raw",
+                    "parseResponse": true,
+                    "authUser": "",
+                    "authPass": "",
+                    "timeout": "60",
+                    "shareCookies": false,
+                    "ca": "",
+                    "rejectUnauthorized": true,
+                    "followRedirect": true,
+                    "useQuerystring": false,
+                    "gzip": true,
+                    "useMtls": false,
+                    "contentType": "application/json",
+                    "data": "{\"scenario\": \"onboarding\", \"error\": \"Make.com could not complete the call to the hub (details in the Make execution log)\", \"detail\": \"SEO branch, Airtable record {{1.record_id}}\"}",
+                    "followAllRedirects": false
+                  },
+                  "metadata": {
+                    "designer": {
+                      "x": 600,
+                      "y": 200
+                    }
+                  }
+                },
+                {
+                  "id": 12,
+                  "module": "builtin:Ignore",
+                  "version": 1,
+                  "metadata": {
+                    "designer": {
+                      "x": 900,
+                      "y": 200
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 20,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": false
+              },
+              "mapper": {
+                "url": "https://YOUR-HUB.onrender.com/api/hooks/make/onboarding",
+                "serializeUrl": false,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "X-Hub-Token",
+                    "value": "YOUR_HUB_API_TOKEN"
+                  }
+                ],
+                "qs": [],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "authUser": "",
+                "authPass": "",
+                "timeout": "60",
+                "shareCookies": false,
+                "ca": "",
+                "rejectUnauthorized": true,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "gzip": true,
+                "useMtls": false,
+                "contentType": "application/json",
+                "data": "{\"record_id\": \"{{1.record_id}}\", \"name\": \"{{1.name}}\", \"website\": \"{{1.website}}\", \"industry\": \"{{1.industry}}\", \"services\": \"{{1.services}}\", \"manager\": \"{{1.manager}}\", \"manager_email\": \"{{1.manager_email}}\", \"service\": \"Paid Ads\"}",
+                "followAllRedirects": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 600,
+                  "y": 300
+                }
+              },
+              "filter": {
+                "name": "Bought Paid Ads",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.services}}",
+                      "o": "text:contain",
+                      "b": "Paid Ads"
+                    }
+                  ]
+                ]
+              },
+              "onerror": [
+                {
+                  "id": 21,
+                  "module": "http:ActionSendData",
+                  "version": 3,
+                  "parameters": {
+                    "handleErrors": false
+                  },
+                  "mapper": {
+                    "url": "https://YOUR-HUB.onrender.com/api/hooks/make/failure",
+                    "serializeUrl": false,
+                    "method": "post",
+                    "headers": [
+                      {
+                        "name": "X-Hub-Token",
+                        "value": "YOUR_HUB_API_TOKEN"
+                      }
+                    ],
+                    "qs": [],
+                    "bodyType": "raw",
+                    "parseResponse": true,
+                    "authUser": "",
+                    "authPass": "",
+                    "timeout": "60",
+                    "shareCookies": false,
+                    "ca": "",
+                    "rejectUnauthorized": true,
+                    "followRedirect": true,
+                    "useQuerystring": false,
+                    "gzip": true,
+                    "useMtls": false,
+                    "contentType": "application/json",
+                    "data": "{\"scenario\": \"onboarding\", \"error\": \"Make.com could not complete the call to the hub (details in the Make execution log)\", \"detail\": \"Paid Ads branch, Airtable record {{1.record_id}}\"}",
+                    "followAllRedirects": false
+                  },
+                  "metadata": {
+                    "designer": {
+                      "x": 600,
+                      "y": 500
+                    }
+                  }
+                },
+                {
+                  "id": 22,
+                  "module": "builtin:Ignore",
+                  "version": 1,
+                  "metadata": {
+                    "designer": {
+                      "x": 900,
+                      "y": 500
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 30,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": {
+                "handleErrors": false
+              },
+              "mapper": {
+                "url": "https://YOUR-HUB.onrender.com/api/hooks/make/onboarding",
+                "serializeUrl": false,
+                "method": "post",
+                "headers": [
+                  {
+                    "name": "X-Hub-Token",
+                    "value": "YOUR_HUB_API_TOKEN"
+                  }
+                ],
+                "qs": [],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "authUser": "",
+                "authPass": "",
+                "timeout": "60",
+                "shareCookies": false,
+                "ca": "",
+                "rejectUnauthorized": true,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "gzip": true,
+                "useMtls": false,
+                "contentType": "application/json",
+                "data": "{\"record_id\": \"{{1.record_id}}\", \"name\": \"{{1.name}}\", \"website\": \"{{1.website}}\", \"industry\": \"{{1.industry}}\", \"services\": \"{{1.services}}\", \"manager\": \"{{1.manager}}\", \"manager_email\": \"{{1.manager_email}}\", \"service\": \"Web Design\"}",
+                "followAllRedirects": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 600,
+                  "y": 600
+                }
+              },
+              "filter": {
+                "name": "Bought Web Design",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.services}}",
+                      "o": "text:contain",
+                      "b": "Web Design"
+                    }
+                  ]
+                ]
+              },
+              "onerror": [
+                {
+                  "id": 31,
+                  "module": "http:ActionSendData",
+                  "version": 3,
+                  "parameters": {
+                    "handleErrors": false
+                  },
+                  "mapper": {
+                    "url": "https://YOUR-HUB.onrender.com/api/hooks/make/failure",
+                    "serializeUrl": false,
+                    "method": "post",
+                    "headers": [
+                      {
+                        "name": "X-Hub-Token",
+                        "value": "YOUR_HUB_API_TOKEN"
+                      }
+                    ],
+                    "qs": [],
+                    "bodyType": "raw",
+                    "parseResponse": true,
+                    "authUser": "",
+                    "authPass": "",
+                    "timeout": "60",
+                    "shareCookies": false,
+                    "ca": "",
+                    "rejectUnauthorized": true,
+                    "followRedirect": true,
+                    "useQuerystring": false,
+                    "gzip": true,
+                    "useMtls": false,
+                    "contentType": "application/json",
+                    "data": "{\"scenario\": \"onboarding\", \"error\": \"Make.com could not complete the call to the hub (details in the Make execution log)\", \"detail\": \"Web Design branch, Airtable record {{1.record_id}}\"}",
+                    "followAllRedirects": false
+                  },
+                  "metadata": {
+                    "designer": {
+                      "x": 600,
+                      "y": 800
+                    }
+                  }
+                },
+                {
+                  "id": 32,
+                  "module": "builtin:Ignore",
+                  "version": 1,
+                  "metadata": {
+                    "designer": {
+                      "x": 900,
+                      "y": 800
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

@@ -1,0 +1,48 @@
+# Render Blueprint: two free web services, one per demo. In Render: New > Blueprint > pick this repo.
+# Keys marked sync: false are asked for once in the Render dashboard; leave any blank to run that part offline.
+services:
+  - type: web
+    name: northwind-automation-hub
+    runtime: docker
+    plan: free
+    dockerfilePath: ./demo-1-automation-hub/Dockerfile
+    dockerContext: ./demo-1-automation-hub
+    healthCheckPath: /api/status
+    envVars:
+      - key: SITE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AIRTABLE_TOKEN
+        sync: false
+      - key: AIRTABLE_BASE_ID
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: HUB_API_TOKEN
+        generateValue: true
+
+  - type: web
+    name: acme-sales-agent
+    runtime: docker
+    plan: free
+    dockerfilePath: ./demo-2-sales-agent/Dockerfile
+    dockerContext: ./demo-2-sales-agent
+    healthCheckPath: /api/status
+    envVars:
+      - key: SITE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false
