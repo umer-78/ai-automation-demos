@@ -1,29 +1,23 @@
-# Python
-.venv/
-__pycache__/
-*.pyc
-.pytest_cache/
-
-# Node
+# Dependencies and builds
 node_modules/
+dist/
+*.tsbuildinfo
 
-# Built dashboards (the Dockerfiles build them; run `npm run build` locally)
-demo-1-automation-hub/backend/app/static/
-demo-2-sales-agent/backend/app/static/
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
 
 # Local data and secrets
-.env
 *.db
-*.db-shm
-*.db-wal
-demo-1-automation-hub/backend/data/storage/
+*.db-journal
+.env
+.env.*
+!.env.example
 
-# OS and editors
+# Editors and OS
 .DS_Store
 .idea/
 .vscode/
-
-# Built previews and local leftovers
-demo-2-sales-agent/preview-dist/
-demo-1-automation-hub/backend/data/old/
-*.log

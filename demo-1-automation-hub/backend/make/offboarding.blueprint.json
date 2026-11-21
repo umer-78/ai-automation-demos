@@ -1,0 +1,135 @@
+{
+  "name": "Northwind \u2014 Client off-boarding (Status = Churned)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": null,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false
+      },
+      "mapper": {
+        "url": "https://YOUR-HUB.onrender.com/api/hooks/make/offboarding",
+        "serializeUrl": false,
+        "method": "post",
+        "headers": [
+          {
+            "name": "X-Hub-Token",
+            "value": "YOUR_HUB_API_TOKEN"
+          }
+        ],
+        "qs": [],
+        "bodyType": "raw",
+        "parseResponse": true,
+        "authUser": "",
+        "authPass": "",
+        "timeout": "60",
+        "shareCookies": false,
+        "ca": "",
+        "rejectUnauthorized": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "gzip": true,
+        "useMtls": false,
+        "contentType": "application/json",
+        "data": "{\"record_id\": \"{{1.record_id}}\"}",
+        "followAllRedirects": false
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      },
+      "onerror": [
+        {
+          "id": 3,
+          "module": "http:ActionSendData",
+          "version": 3,
+          "parameters": {
+            "handleErrors": false
+          },
+          "mapper": {
+            "url": "https://YOUR-HUB.onrender.com/api/hooks/make/failure",
+            "serializeUrl": false,
+            "method": "post",
+            "headers": [
+              {
+                "name": "X-Hub-Token",
+                "value": "YOUR_HUB_API_TOKEN"
+              }
+            ],
+            "qs": [],
+            "bodyType": "raw",
+            "parseResponse": true,
+            "authUser": "",
+            "authPass": "",
+            "timeout": "60",
+            "shareCookies": false,
+            "ca": "",
+            "rejectUnauthorized": true,
+            "followRedirect": true,
+            "useQuerystring": false,
+            "gzip": true,
+            "useMtls": false,
+            "contentType": "application/json",
+            "data": "{\"scenario\": \"offboarding\", \"error\": \"Make.com could not complete the call to the hub (details in the Make execution log)\", \"detail\": \"off-boarding, Airtable record {{1.record_id}}\"}",
+            "followAllRedirects": false
+          },
+          "metadata": {
+            "designer": {
+              "x": 300,
+              "y": 200
+            }
+          }
+        },
+        {
+          "id": 4,
+          "module": "builtin:Ignore",
+          "version": 1,
+          "metadata": {
+            "designer": {
+              "x": 600,
+              "y": 200
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

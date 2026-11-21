@@ -1,56 +1,40 @@
 # AI automation demos
 
-Two complete builds for agencies and B2B sales teams. Each one runs on demo data out of the box,
-switches to a client's real accounts from its Settings page, and is deployed live.
+Two working demos, each running end to end on fake or public data:
 
-| Build | What it does | Live |
-| --- | --- | --- |
-| [**Northwind Automation Hub**](demo-1-automation-hub/) | Agency client onboarding with Airtable and Make.com, AI briefs and website drafts, and daily ad reporting from Google Ads, Meta Ads, Search Console and Analytics with tested cost alerts. | [Open](https://automation-hub-production-0b8f47e0.up.railway.app) |
-| [**B2B Sales Agent**](demo-2-sales-agent/) | An agent that researches real companies, scores leads and CRM accounts, drafts outreach that a person approves, learns from every edit and reads HubSpot or a CRM export. | [Open](https://sales-agent-production-68fda07e.up.railway.app) |
+| Demo | What it proves | Folder |
+|---|---|---|
+| **Northwind Digital: Agency Automation Hub** | Make.com and Airtable triggers, a Python service, Supabase, Claude-written briefs and summaries, a reporting pipeline with alerts, a 3D dashboard | [demo-1-automation-hub](demo-1-automation-hub) |
+| **Acme Cloud Security: B2B Sales Agent** | An autonomous agent loop with tools, web research with cited sources, explainable lead scoring, CRM analysis, drafted outreach held for human approval, learning from feedback | [demo-2-sales-agent](demo-2-sales-agent) |
 
-![Northwind Automation Hub](demo-1-automation-hub/docs/screenshots/overview.png)
+![Agency Automation Hub](demo-1-automation-hub/docs/screenshots/1-hub.jpg)
+![B2B Sales Agent](demo-2-sales-agent/docs/screenshots/0-desk.jpg)
 
-![B2B Sales Agent](demo-2-sales-agent/docs/screenshots/overview.png)
+## Shared rules, and where each is enforced
 
-## What both builds have in common
-
-* **Real numbers.** The hub's demo data follows published 2026 industry medians, each with its
-  source. The agent researches real companies and every fact it uses links to the page it came
-  from. Connect real accounts and the demo data is replaced.
-* **A person stays in charge.** The sales agent has no way to send email; every draft waits for
-  approval. The hub drafts briefs for the account manager instead of sending them to clients.
-* **Nothing fails quietly.** Every run is logged step by step, and every failure is posted to
-  Slack. Both apps have a button that forces a failure to prove it.
-* **Private by default once real.** Loading real data locks the app behind an access code.
-  API keys pasted in Settings are encrypted before they are stored and shown only as their last
-  four characters.
-* **Tested.** 73 tests for the hub and 49 for the agent, run on SQLite and Postgres in CI.
-
-## Stack
-
-Python 3.11, FastAPI and SQLAlchemy Core, Postgres (SQLite locally), the Anthropic API,
-React 19, Vite, Tailwind and React Three Fiber, Docker. Each app is one service: the API also
-serves the dashboard, with server-rendered titles, descriptions and JSON-LD per page.
-
-## Run locally
-
-Each folder has its own README with the full setup. The short version:
-
-```bash
-git clone https://github.com/umer-78/ai-automation-demos
-cd ai-automation-demos/demo-1-automation-hub   # or demo-2-sales-agent
-python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r backend/requirements-dev.txt
-(cd frontend && npm ci && npm run build)
-cd backend && uvicorn app.main:app --reload    # http://localhost:8000
-```
-
-No keys are needed: both apps run offline with template AI output and a simulated Slack feed.
+- **Fake or public data only.** Demo 1's clients and Demo 2's CRM are invented. Demo 1's ad numbers are priced from published industry benchmarks, and Demo 2's leads come from public web pages, each with its link.
+- **Secrets live in environment variables.** Each demo has a `backend/.env.example`; nothing secret is committed.
+- **Every automation logs success and failure**, and failures alert Slack (`automation_log` in Demo 1, `agent_runs` and `activity_log` in Demo 2).
+- **Nothing reaches a customer without approval.** Demo 2 has no send tool; an email file exists only after a recorded approval. Tests check this.
 
 ## Deploy
 
-On Railway, add one service per folder (root directory `demo-1-automation-hub` or
-`demo-2-sales-agent`; each has a Dockerfile) and a Postgres database for each. On Render,
-`render.yaml` creates both services in one step. The steps and variables are in each README.
+1. Fork or clone this repository.
+2. In [Render](https://render.com): New, then Blueprint, then pick the repository. `render.yaml` creates both services on the free plan.
+3. Fill in any keys Render asks for. Each one is optional: without it, that part runs offline and the page says so.
+4. Set `SITE_URL` to each service's address and redeploy, so canonical links, the sitemap and social cards point at it.
+5. For Demo 1's daily job, add the repository secrets `HUB_URL` and `HUB_API_TOKEN`.
 
-Built by [Umer Hashmi](https://github.com/umer-78). MIT licence.
+Free instances sleep when idle, so the first visit can take about a minute. Without `DATABASE_URL` each service uses SQLite and starts fresh after a restart; with a Supabase connection string, everything persists.
+
+## Answers to the spec's open questions
+
+- **Web search API for Demo 2:** Tavily. It is built for agents, returns clean text with each result's URL, and its free plan gives 1,000 credits a month (one per basic search). Without a key, the agent uses a saved set of real results so the demo always works.
+- **Lovable or Replit for the front ends:** neither. Both front ends are hand-built React with React Three Fiber, served by the same FastAPI service as the API, so each demo is a single deploy with no second platform to keep in sync.
+- **Make.com blueprints:** in the repo as importable JSON, `demo-1-automation-hub/backend/make/`, with a script that fills in your API address and token before import.
+
+## Checks
+
+`.github/workflows/ci.yml` runs both demos' backend tests and type-checks and builds both front ends on every push.
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the open-source pieces used.

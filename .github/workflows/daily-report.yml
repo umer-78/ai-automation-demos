@@ -1,0 +1,25 @@
+name: Daily reporting job (Demo 1)
+
+# Render's free plan has no cron jobs, so GitHub runs the daily job against the live hub.
+# Needs two repository secrets: HUB_URL (e.g. https://northwind-hub.onrender.com) and HUB_API_TOKEN.
+on:
+  schedule:
+    - cron: "17 6 * * *"   # 06:17 UTC every day
+  workflow_dispatch:
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run the daily reporting job
+        env:
+          HUB_URL: ${{ secrets.HUB_URL }}
+          HUB_API_TOKEN: ${{ secrets.HUB_API_TOKEN }}
+        run: |
+          if [ -z "$HUB_URL" ] || [ -z "$HUB_API_TOKEN" ]; then
+            echo "HUB_URL or HUB_API_TOKEN is not set; skipping."
+            exit 0
+          fi
+          # A sleeping free instance can take about a minute to wake, so allow for it.
+          curl --fail-with-body --retry 3 --retry-delay 20 --max-time 120 \
+            -X POST "$HUB_URL/api/hooks/cron/daily-report" -H "X-Hub-Token: $HUB_API_TOKEN"

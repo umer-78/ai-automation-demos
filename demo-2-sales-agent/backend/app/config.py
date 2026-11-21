@@ -1,109 +1,60 @@
-"""Runtime configuration. Every secret comes from environment variables (see .env.example)."""
-
+"""Runtime settings. Everything comes from environment variables; nothing secret lives in the repo."""
 from __future__ import annotations
 
-from functools import lru_cache
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+DEMO_DIR = BACKEND_DIR.parent
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=(BACKEND_DIR / ".env", BACKEND_DIR.parent / ".env"),
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+def _get(name: str, default: str = "") -> str:
+    return (os.environ.get(name) or default).strip()
 
-    # --- App -----------------------------------------------------------------------
-    app_name: str = "Acme Cloud Security Sales Agent"
-    environment: str = "development"  # development | production
-    database_url: str = f"sqlite:///{(BACKEND_DIR / 'data' / 'acme.db').as_posix()}"
-    public_base_url: str = "http://localhost:8000"
-    auto_seed: bool = True  # load the mock CRM on first start when the database is empty
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    # --- Security ----------------------------------------------------------------------
-    automation_api_key: str = ""  # X-Automation-Key header for cron / scheduled runs
-    admin_token: str = ""  # X-Admin-Token header for the reset endpoint
-    owner_token: str = ""  # access code for Settings and, once real CRM data is in, for the whole app
-    viewer_token: str = ""  # optional read-only access code for teammates
-    app_secret: str = ""  # encrypts keys saved from the Settings page
-    agent_runs_per_hour: int = 6  # "Run agent" clicks per visitor IP per hour (public demo guard)
-    review_actions_per_hour: int = 300  # approve / edit / reject actions per IP per hour
-    live_runs_per_day: int = 40  # cap on paid AI runs per day; extra runs use offline mode
-    trust_proxy_headers: bool = True
+def normalise_db_url(url: str) -> str:
+    """Supabase hands out postgres:// URLs; SQLAlchemy needs the psycopg driver named."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
 
-    # --- Agent brain (Anthropic Messages API with tool use) -------------------------------
-    anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-5-5"
-    agent_max_turns: int = 16
-    agent_time_budget_s: int = 150  # hard stop, leaves room for the fallback inside 3 minutes
-    agent_target_leads: int = 12
-    agent_outreach_drafts: int = 5
-    agent_followups: int = 5
-    feedback_context_size: int = 20  # last N feedback items placed in the next run's prompt
-    price_input_per_mtok: float = 3.0  # for the cost estimate shown per run (USD)
-    price_output_per_mtok: float = 15.0
 
-    # --- Research ---------------------------------------------------------------------------
-    tavily_api_key: str = ""
-    research_max_results: int = 6
-    research_cache_path: str = str(BACKEND_DIR / "data" / "research_snapshot.json")
-
-    # --- Seller identity used in drafts ------------------------------------------------------
-    seller_company: str = "Acme Cloud Security"
-    rep_name: str = "Jordan Reyes"
-    rep_title: str = "Account Executive"
-
-    # --- Internal alerts (never customer-facing) -----------------------------------------------
-    slack_webhook_url: str = ""
-    slack_channel_label: str = "#acme-sales-ops"
-
-    # --- Live CRM ---------------------------------------------------------------------------
-    hubspot_token: str = ""  # HubSpot private app token (crm.objects.companies/deals/contacts.read, crm.objects.owners.read)
-    hubspot_sync_minutes: int = 60  # in real-data mode, how often HubSpot is read again; 0 turns it off
-
-    # --- Mock CRM -----------------------------------------------------------------------------
-    crm_accounts_csv: str = str(BACKEND_DIR / "data" / "crm_accounts.csv")
-    crm_activity_csv: str = str(BACKEND_DIR / "data" / "crm_activity.csv")
-
-    # -------------------------------------------------------------------------------------------
-    @property
-    def is_production(self) -> bool:
-        return self.environment.lower() == "production"
+@dataclass(frozen=True)
+class Settings:
+    database_url: str = field(default_factory=lambda: normalise_db_url(
+        _get("DATABASE_URL", f"sqlite:///{BACKEND_DIR / 'agent.db'}")))
+    anthropic_api_key: str = field(default_factory=lambda: _get("ANTHROPIC_API_KEY") or _get("CLAUDE_API_KEY"))
+    claude_model: str = field(default_factory=lambda: _get("CLAUDE_MODEL", "claude-sonnet-5-5"))
+    tavily_api_key: str = field(default_factory=lambda: _get("TAVILY_API_KEY"))
+    slack_webhook_url: str = field(default_factory=lambda: _get("SLACK_WEBHOOK_URL"))
+    frontend_dist: str = field(default_factory=lambda: _get("FRONTEND_DIST", str(DEMO_DIR / "frontend" / "dist")))
+    rate_limit_per_minute: int = field(default_factory=lambda: int(_get("RATE_LIMIT_PER_MINUTE", "40") or 40))
+    run_timeout_s: int = field(default_factory=lambda: int(_get("AGENT_RUN_TIMEOUT_S", "170") or 170))
+    max_turns: int = field(default_factory=lambda: int(_get("AGENT_MAX_TURNS", "40") or 40))
+    # The offline agent finishes in a fraction of a second; a short pause per tool call lets the page show each step.
+    offline_step_s: float = field(default_factory=lambda: float(_get("OFFLINE_STEP_SECONDS", "0.35") or 0))
+    # On an empty database, run the offline agent once at start-up so the demo opens with real work.
+    seed_first_run: bool = field(default_factory=lambda: _get("SEED_FIRST_RUN", "1") not in ("0", "false", "no"))
 
     @property
-    def llm_live(self) -> bool:
+    def live_model(self) -> bool:
         return bool(self.anthropic_api_key)
 
     @property
-    def research_live(self) -> bool:
+    def live_search(self) -> bool:
         return bool(self.tavily_api_key)
 
     @property
-    def slack_live(self) -> bool:
-        return bool(self.slack_webhook_url)
-
-    @property
-    def company_set(self) -> bool:
-        return self.seller_company != "Acme Cloud Security"
-
-    @property
-    def hubspot_live(self) -> bool:
-        return bool(self.hubspot_token)
+    def slack_enabled(self) -> bool:
+        return self.slack_webhook_url.startswith("https://hooks.slack.com/")
 
     @property
     def database_kind(self) -> str:
-        return "sqlite" if self.database_url.startswith("sqlite") else "postgres"
-
-    @property
-    def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        return "Supabase Postgres" if self.database_url.startswith("postgresql") else "SQLite (local)"
 
 
-@lru_cache
 def get_settings() -> Settings:
     return Settings()

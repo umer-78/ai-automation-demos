@@ -1,15 +1,13 @@
 {
-  "name": "Acme Sales Agent",
-  "short_name": "Sales Agent",
-  "description": "An AI sales agent that researches leads, reads the CRM, scores and drafts outreach that a person approves.",
-  "start_url": "/",
-  "scope": "/",
+  "name": "Acme Cloud Security sales agent",
+  "short_name": "Sales agent",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#eef1ee",
-  "theme_color": "#0f3b35",
+  "background_color": "#12302B",
+  "theme_color": "#12302B",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "./favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "./apple-touch-icon.png", "type": "image/png", "sizes": "180x180" },
+    { "src": "./icon-512.png", "type": "image/png", "sizes": "512x512" }
   ]
 }
